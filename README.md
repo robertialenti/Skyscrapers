@@ -3,12 +3,12 @@ This repository includes the code and dependencies needed to generate an animati
 
 The code for doing so is separated into 5 sections.
 
-*Importing Libraries
+## Importing Libraries
 
-*Scraping
+## Scraping
 
-*Geocoding
+## Geocoding
 
-*Cleaning Data
+## Cleaning Data
 
-*Mapping
+## Mapping
