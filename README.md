@@ -5,13 +5,13 @@ This repository includes the Python code needed to generate an animation of worl
 In this section, I import the libraries needed to scrape, clean, and plot data.
 
 ## 2. Scraping
-The building-level data is gathered from [](https://skyscraperpage.com/), which provides comprehensive coverage of large buildings across more than 7,500 cities. The scraper uses Selenium and BeautifulSoup to dynamically navigate the website and parse HTML on webpages. For each building, the scraper gathers information for a number of buildings.
+The building-level data is gathered from [SkyscraperPage](https://skyscraperpage.com/), which provides comprehensive coverage of large buildings across more than 7,500 cities. The scraper uses Selenium and BeautifulSoup to dynamically navigate the website and parse HTML on each city's webpage. In each city, I collect property-level information for all buildings. 
 
 ## 3. Geocoding
-I will be plotting skyscraper construction.
+As I will be plotting skyscraper construction by metro area, I choose to simply geoccode a small sample of buildings from each metropolitain area, and use the average latitude and longitude. This reduces the number of geocoding calls performed with Google's Geocoding API and makes the visualization more readable.
 
 ## 4. Preparing Data
-The complete dataset has the following variables.
+The complete dataset has the following variables. The dataset includes xx buildings from yy cities and zz metropoltain areas.
 - id_city: City unique identifier
 - name_metro_area: Metropolitain area name
 - name_city: City name
@@ -26,9 +26,9 @@ The complete dataset has the following variables.
 - longitude_building: Building longitude
 - skyscraper: Indicator variable, equal to 1 if a building has a height greater than 100 meters, and 0 otherwise
 
-The data is aggregated by metropolitain area using Skyscraperpage's aggregation. Cities that do not belong to metropolitain areas are left ungrouped.
+The data is aggregated by metropolitain area using SkyscraperPage's aggregation. Cities that do not belong to metropolitain areas are left ungrouped. 
 
-The prepared dataset includes xx buildings from yy cities and zz metropoltain areas.
+I clean the data by retaining only buildings with a height of at least 100 meters, as this is the threshold commonly used to ___
 
 As Skyscraperpage's privacy policy asks that data is not published publicly, I choose not to post the dataset in this repository.
 
