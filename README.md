@@ -1,8 +1,8 @@
 # Worldwide Skyscraper Construction
-This repository includes the Python code needed to generate an animation of worldwide skyscraper construction over the period 1900-2024. The [code](https://github.com/robertialenti/Skyscrapers/blob/main/code.py) is separated into 5 sections.
+This repository includes the Python code needed to scrape a database with information about more than 100,000 buildings in xx cities and generate an animation of worldwide skyscraper construction over the period 1900-2024. The [code](https://github.com/robertialenti/Skyscrapers/blob/main/code.py) is separated into 5 sections.
 
 ## 1. Prelinimaries
-In this section, I import the libraries needed to scrape, clean, and plot data.
+In this section, I import the libraries needed to scrape, clean, and plot the data. The scraping is done with a combination of Selenium, Beautifulsoup, and Pandas.
 
 ## 2. Scraping
 The building-level data is gathered from [SkyscraperPage](https://skyscraperpage.com/), which provides comprehensive coverage of large buildings across more than 7,500 cities. The scraper uses Selenium and BeautifulSoup to dynamically navigate the website and parse HTML on each city's webpage. In each city, I collect property-level information for all buildings. 
