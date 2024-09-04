@@ -58,7 +58,7 @@ def choose_city(id_city):
     link_city = f"https://skyscraperpage.com/cities/?cityID={id_city}"
     try:
         browser.get(link_city)
-        time.sleep(5)
+        time.sleep(10)
         return link_city
     except:
         pass
@@ -231,7 +231,6 @@ def scrape(df, id_city):
     try:
         # Choose City
         link_city = choose_city(id_city)
-        time.sleep(5)
         
         # Initialize Building Number
         number_building = 1
@@ -332,10 +331,8 @@ def scrape(df, id_city):
     return df
 
 
-
-
 # Perform Scraping
-df = pd.read_excel(filepath + "raw_data.xlsx", usecols=lambda x: 'Unnamed' not in x)
+df = pd.read_excel(filepath + "raw_data2.xlsx", usecols=lambda x: 'Unnamed' not in x)
 df = df.sort_values(by = "id_city")
 
 # Create Empty Dataframe
@@ -345,7 +342,7 @@ df2 = pd.DataFrame()
 launch_browser()
 
 # Iterate Over Cities
-for id_city in tqdm(range(24,30)):
+for id_city in tqdm(range(13,100)):
 #for id_city in tqdm(range(6638,7000)):
     # Scrape Buildings in Selected City
     df2 = scrape(df2, id_city)
@@ -355,13 +352,11 @@ for id_city in tqdm(range(24,30)):
     df = df.drop_duplicates(subset = ["name_building", "address_building"]).reset_index(drop = True)
     df.to_excel(filepath + "raw_data.xlsx")
 
-STOP
-
 # Assess Progress by City
 df["count"] = 1
 df_collapsed = df.groupby(["id_city", "name_city"])["count"].sum().reset_index()
 df_collapsed = df_collapsed.sort_values(by = "id_city", ascending = True)
-df_collapsed.head(25)
+df_collapsed.head(50)
 
 
 #%% Section 3: Geocoding
