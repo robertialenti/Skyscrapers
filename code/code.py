@@ -8,6 +8,7 @@ This script scrapes data on buildings, cleans addresses, maps properties to coor
 from tqdm import tqdm
 import pandas as pd
 import time
+import random
 import re
 import io
 import os
@@ -15,8 +16,11 @@ import warnings
 import requests
 
 # Web Scraping
+import undetected_chromedriver as uc
+from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
 from selenium import webdriver
+from selenium_stealth import stealth
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -35,30 +39,37 @@ warnings.filterwarnings("ignore", category=FutureWarning, message="The frame.app
 pd.set_option("display.expand_frame_repr", False)
 
 # Paths
-filepath = "C:/Users/rialenti/Dropbox (Harvard University)/skyscrapers/"
+filepath = "C:/Users/Robert/OneDrive/Desktop/Bobby/GitHub/Skyscrapers/"
 
 # APIs
 geocoding_api_key = "AIzaSyB5ej9kIbpM7IHUHVUUcLEkCI5ZoFI_Bz8"
 
 
 #%% Section 2: Scraping Data
-# Define Function for Launching Browser
+# Define Function for Launching Undetected Browser
 def launch_browser():
-    global browser
-    options = webdriver.ChromeOptions()
-    s = Service(filepath + "chromedriver.exe")
-    browser = webdriver.Chrome(service=s, options=options)
-    browser.maximize_window()
-    global wait
-    wait = WebDriverWait(browser, 3) 
-    
-    
+    browser = uc.Chrome()
+
+    # Apply stealth settings to the driver
+    #stealth(browser,
+    #        languages=["en-US", "en"],
+    #        vendor="Google Inc.",
+    #        platform="Win32",
+    #        webgl_vendor="Intel Inc.",
+    #        renderer="Intel Iris OpenGL Engine",
+    #        fix_hairline=True,
+    #        )
+
+    # Return Browser
+    return browser
+
+
 # Define Function for Choosing City
 def choose_city(id_city):
     link_city = f"https://skyscraperpage.com/cities/?cityID={id_city}"
     try:
         browser.get(link_city)
-        time.sleep(10)
+        time.sleep(5)
         return link_city
     except:
         pass
@@ -263,9 +274,9 @@ def scrape(df, id_city):
                         browser.find_element(By.XPATH, f"{base_string}[{4 + 2*(number_building-1)}]/td[2]/a").click()
                     except:
                         browser.find_element(By.XPATH, f"{base_string_alt}[{4 + 2*(number_building-1)}]/td[2]/a").click()
-                time.sleep(5)
 
                 # Store Building-Specific HTML
+                time.sleep(10)
                 soup = BeautifulSoup(browser.page_source, "html.parser")
 
                 # Gather Building Characteristics
@@ -289,7 +300,7 @@ def scrape(df, id_city):
     
                 # Year of Construction Start
                 year_started_building = get_building_construction_date(soup, type = "start")
-    
+
                 # Year of Construction Finish
                 year_finished_building = get_building_construction_date(soup, type = "finish")
     
@@ -310,11 +321,12 @@ def scrape(df, id_city):
                 print(df)
                 
             except:
-                print("Not a valid building.")
+                print("Could not scrape building details.")
                 pass
             
             # Increment Building Number
             number_building = number_building + 1
+            print(number_building)
             
             # Return to List of Buildings or Change Page
             number_building, number_page = change_page(link_city, number_building, number_buildings, number_page)
@@ -331,37 +343,37 @@ def scrape(df, id_city):
     return df
 
 
-# Perform Scraping
-df = pd.read_excel(filepath + "raw_data2.xlsx", usecols=lambda x: 'Unnamed' not in x)
-df = df.sort_values(by = "id_city")
-
-# Create Empty Dataframe
-df2 = pd.DataFrame()
+# Create Empty Dataframe to Hold Results
+df = pd.DataFrame()
+#df = pd.read_excel(filepath + "data/raw_data.xlsx")
 
 # Launch Browser
-launch_browser()
+browser = launch_browser()
 
 # Iterate Over Cities
-for id_city in tqdm(range(13,100)):
-#for id_city in tqdm(range(6638,7000)):
+for id_city in tqdm(range(1,7000)):
     # Scrape Buildings in Selected City
-    df2 = scrape(df2, id_city)
+    df_temp = scrape(df, id_city)
     
     # Append Scraped Data to Already-Collected Data
-    df = pd.concat([df, df2], ignore_index = True)
+    df = pd.concat([df, df_temp], ignore_index = True)
     df = df.drop_duplicates(subset = ["name_building", "address_building"]).reset_index(drop = True)
-    df.to_excel(filepath + "raw_data.xlsx")
+
+    # Save Data
+    df.to_excel(filepath + "data/raw_data.xlsx")
 
 # Assess Progress by City
-df["count"] = 1
-df_collapsed = df.groupby(["id_city", "name_city"])["count"].sum().reset_index()
-df_collapsed = df_collapsed.sort_values(by = "id_city", ascending = True)
-df_collapsed.head(50)
+#df["count"] = 1
+#df_collapsed = df.groupby(["id_city", "name_city"])["count"].sum().reset_index()
+#df_collapsed = df_collapsed.sort_values(by = "id_city", ascending = True)
+#df_collapsed.head(50)
+
+stop
 
 
 #%% Section 3: Geocoding
-df = pd.read_excel(filepath + "raw_data.xlsx", usecols=lambda x: 'Unnamed' not in x)
-df_crosswalk = pd.read_excel(filepath + "city_crosswalk.xlsx", sheet_name = "Crosswalk")
+df = pd.read_excel(filepath + "data/raw_data.xlsx", usecols=lambda x: 'Unnamed' not in x)
+df_crosswalk = pd.read_excel(filepath + "data/city_crosswalk.xlsx", sheet_name = "Crosswalk")
 
 # Map Many Cities to Single Metro Area
 df = pd.merge(df, 
