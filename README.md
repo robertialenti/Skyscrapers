@@ -34,7 +34,11 @@ I clean the data by retaining only buildings with a height of at least 100 meter
 
 As Skyscraperpage's privacy policy asks that data is not published publicly, I choose not to post the dataset in this repository.
 
-### 5. Mapping
+### 5. Aggregating
+
+The dataset is collapsed by metro area and year. I take the sum of count and building height. The aggregate variables are then used to track total number of buildings and total building height built by metro area over time.
+
+### 6. Mapping
 Here is a static map, showing the state of skyscraper construction in 2024.
 
 Here is an animated version, showing the growing prevalence of skyscrapers over the last 125 years. It is clear to see...
