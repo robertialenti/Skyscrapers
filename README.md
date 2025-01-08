@@ -4,13 +4,13 @@ This repository includes the Python code needed to scrape a database with inform
 ## Code
 
 ### 1. Prelinimaries
-In this section, I import the libraries needed to scrape, clean, and plot the data. The scraping is done with a combination of Selenium, Beautifulsoup, and Pandas.
+In this section, I import the libraries needed to scrape, clean, and plot the data. The scraping is done with a combination of Selenium, Beautifulsoup, and Pandas using an undetected Chrome instance.
 
 ### 2. Scraping
-The building-level data is gathered from [SkyscraperPage](https://skyscraperpage.com/), which provides comprehensive coverage of large buildings across more than 7,500 cities. The scraper uses Selenium and BeautifulSoup to dynamically navigate the website and parse HTML on each city's webpage. In each city, I collect property-level information for all buildings. 
+The building-level data is gathered from [SkyscraperPage](https://skyscraperpage.com/), which provides comprehensive coverage of large buildings across more than 7,000 cities. The scraper uses Selenium and BeautifulSoup to dynamically navigate the website and parse HTML on each city's webpage. In each city, I collect property-level information for all buildings, which includes their address, completion status, height, etc. 
 
 ### 3. Geocoding
-As I will be plotting skyscraper construction by metro area, I choose to simply geoccode a small sample of buildings from each metropolitain area, and use the average latitude and longitude. This reduces the number of geocoding calls performed with Google's Geocoding API and makes the visualization more readable.
+As I will be plotting skyscraper construction by metro area, I choose to simply geoccode a small sample of buildings from each metropolitain area and use the average latitude and longitude to geolocate the metro area. This reduces the number of geocoding calls performed with Google's Geocoding API - as it circumvents the need to geolocate each metro areas constituent cities - and makes the visualization more readable.
 
 ### 4. Preparing Data
 The complete dataset has the following variables. The dataset includes xx buildings from yy cities and zz metropoltain areas.
