@@ -1,5 +1,5 @@
 # Worldwide Skyscraper Construction
-This repository includes the Python code needed to scrape a database with information about more than 100,000 buildings in xx cities and generate an animation of worldwide skyscraper construction over the period 1900-2024. The [code](https://github.com/robertialenti/Skyscrapers/blob/main/code.py) is separated into 5 sections.
+This repository includes the Python code needed to scrape SkyscraperPage - a database with information about more than 130,000 buildings around the world - and generate an animation of worldwide skyscraper construction over the period 1900-2025. The [code](https://github.com/robertialenti/Skyscrapers/blob/main/code.py) to do so is separated into 6 sections.
 
 ## Code
 
