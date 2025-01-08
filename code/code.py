@@ -326,8 +326,7 @@ def scrape(df, id_city):
             
             # Increment Building Number
             number_building = number_building + 1
-            print(number_building)
-            
+
             # Return to List of Buildings or Change Page
             number_building, number_page = change_page(link_city, number_building, number_buildings, number_page)
             print(f"City: {name_city},",
@@ -344,14 +343,14 @@ def scrape(df, id_city):
 
 
 # Create Empty Dataframe to Hold Results
-df = pd.DataFrame()
-#df = pd.read_excel(filepath + "data/raw_data.xlsx")
+#df = pd.DataFrame()
+df = pd.read_excel(filepath + "data/raw_data.xlsx")
 
 # Launch Browser
 browser = launch_browser()
 
 # Iterate Over Cities
-for id_city in tqdm(range(1,7000)):
+for id_city in tqdm(range(140,7000)):
     # Scrape Buildings in Selected City
     df_temp = scrape(df, id_city)
     
@@ -362,20 +361,19 @@ for id_city in tqdm(range(1,7000)):
     # Save Data
     df.to_excel(filepath + "data/raw_data.xlsx")
 
-# Assess Progress by City
-#df["count"] = 1
-#df_collapsed = df.groupby(["id_city", "name_city"])["count"].sum().reset_index()
-#df_collapsed = df_collapsed.sort_values(by = "id_city", ascending = True)
-#df_collapsed.head(50)
-
-stop
-
 
 #%% Section 3: Geocoding
 df = pd.read_excel(filepath + "data/raw_data.xlsx", usecols=lambda x: 'Unnamed' not in x)
 df_crosswalk = pd.read_excel(filepath + "data/city_crosswalk.xlsx", sheet_name = "Crosswalk")
 
-# Map Many Cities to Single Metro Area
+# Correct Address
+def correct_address(row):
+    if row['name_city'] in row['address_building']:
+        return row['address_building'].replace(row['name_city'], f" {row['name_city']}")
+    return row['address_building']
+df['address_building'] = df.apply(correct_address, axis=1)
+
+# Map Cities to Single Metro Area
 df = pd.merge(df, 
               df_crosswalk[["id_city", "name_metro_area"]], 
               on = "id_city", 
@@ -409,23 +407,22 @@ def geocode(address):
 # Geocode Sample of Buildings in Each Metro Area
 df_sample = df.groupby('name_metro_area').head(10)
 tqdm.pandas()
-#df_sample[['latitude_building', 'longitude_building']] = df_sample['address_building'].progress_apply(lambda x: geocode(x)).apply(pd.Series)
-#df_sample = df_sample.groupby("name_metro_area")["latitude_building", "longitude_building"].mean().reset_index()
-#df_sample.to_excel(filepath + "geocoded_sample.xlsx")
+df_sample[['latitude_building', 'longitude_building']] = df_sample['address_building'].progress_apply(lambda x: geocode(x)).apply(pd.Series)
+df_sample = df_sample.groupby("name_metro_area")[["latitude_building", "longitude_building"]].mean().reset_index()
+df_sample = df_sample.drop_duplicates(subset = ["name_metro_area"]).reset_index(drop = True)
 
 # Assign Coordinates to Each Metro Area Based on Geocoded Sample
-df_geocoded_sample = pd.read_excel(filepath + "geocoded_sample.xlsx")
 df = pd.merge(df, 
-              df_geocoded_sample, 
+              df_sample[['name_metro_area', 'latitude_building', 'longitude_building']], 
               on = "name_metro_area",
               how = "left")
 
 
-#%% Section 4: Preparing Data
-# Remove Duplicate Buildings
+#%% Section 4: Cleaning Data
+# Remove Potential Duplicate Buildings
 df = df.drop_duplicates(subset = ["name_building", "address_building"]).reset_index(drop = True)
 
-# Convert Years to Integer
+# Convert Year Started and Year Finished to Integer
 df['year_started_building'] = pd.to_numeric(df['year_started_building'], errors='coerce')
 df['year_finished_building'] = pd.to_numeric(df['year_finished_building'], errors='coerce')
 df["year_started_building"] = df["year_started_building"].astype(pd.Int64Dtype())
@@ -447,35 +444,42 @@ df = df[df['use_building'].str.contains(pattern, case=False, regex=True)]
 # Retain Built Skyscrapers
 df = df[df["status_building"] == "built"]
 
-# Aggregate Variables of Interest by Metro Area
-df["count"] = 1
-df = df.groupby(["name_metro_area", "year_finished_building"]).agg(
+
+#%% Section 4: Aggregating Data Prior to Mapping
+# Create Dataset for Aggregating
+df_agg = df
+
+# Aggregate Variables of Interest by Metro Area and Year
+df_agg["count"] = 1
+df_agg = df_agg.groupby(["name_metro_area", "year_finished_building"]).agg(
     {"count": "sum",
      "height_building_m": "sum",
      "latitude_building": "mean",
      "longitude_building": "mean"}
     ).reset_index()
 
-# Rectangularize Dataset
-all_years = pd.Series(range(int(df["year_finished_building"].min()), int(df["year_finished_building"].max()) + 1))
-metro_areas = df["name_metro_area"].unique()
+# Rectangularize Data
+all_years = pd.Series(range(int(df_agg["year_finished_building"].min()), int(df_agg["year_finished_building"].max()) + 1))
+metro_areas = df_agg["name_metro_area"].unique()
 all_combinations = pd.MultiIndex.from_product([metro_areas, all_years], names=["name_metro_area", "year_finished_building"]).to_frame(index=False)
-df = all_combinations.merge(df, on=["name_metro_area", "year_finished_building"], how="left")
+df_agg = all_combinations.merge(df_agg, 
+    on=["name_metro_area", "year_finished_building"], 
+    how="left")
 
 # Filling Missing Variables of Interest
-df['latitude_building'] = df.groupby('name_metro_area')['latitude_building'].apply(lambda group: group.ffill().bfill())
-df['longitude_building'] = df.groupby('name_metro_area')['longitude_building'].apply(lambda group: group.ffill().bfill())
-df.fillna({"count": 0, 'height_building_m': 0}, inplace=True)
-df = df.sort_values(by = ["name_metro_area", "year_finished_building"])
+df_agg['latitude_building'] = df_agg.groupby('name_metro_area')['latitude_building'].transform(lambda group: group.ffill().bfill())
+df_agg['longitude_building'] = df_agg.groupby('name_metro_area')['longitude_building'].transform(lambda group: group.ffill().bfill())
+df_agg.fillna({"count": 0, 'height_building_m': 0}, inplace=True)
+df_agg = df_agg.sort_values(by = ["name_metro_area", "year_finished_building"])
 
 # Generate Cumulative Variables of Interest
-df["cum_count"] = df.groupby("name_metro_area")["count"].cumsum()
-df["cum_height"] = df.groupby("name_metro_area")["height_building_m"].cumsum()
+df_agg["cum_count"] = df_agg.groupby("name_metro_area")["count"].cumsum()
+df_agg["cum_height"] = df_agg.groupby("name_metro_area")["height_building_m"].cumsum()
 
 
 #%% Section 5: Mapping
 # Create Dataset for Mapping
-df_map = df
+df_map = df_agg
 
 # Define Function for Specifying Map Parameters
 def map_parameters(data, animation_frame, title):
@@ -486,8 +490,8 @@ def map_parameters(data, animation_frame, title):
                          lat = 'latitude_building', 
                          lon = 'longitude_building',
                          size = 'cum_count',
-                         size_max = 15,
-                         opacity = 0.75,
+                         size_max = 20,
+                         opacity = 0.85,
                          color = 'cum_height',
                          animation_frame = animation_frame,
                          hover_name = 'name_metro_area', 
@@ -539,23 +543,27 @@ def map_parameters(data, animation_frame, title):
 
 # Define Function for Creating Map of Skyscraper Construction
 def map_skyscraper_construction(data, type): 
+    # Find Last Year
+    last_year = data["year_finished_building"].max()
+    last_year_str = str(last_year)
+
     # Static Map
     if type == "static":
         pio.renderers.default = 'browser'
         animation_frame = None
-        title = "Worldwide Skyscraper Construction, 2024"
-        data = data[data["year_finished_building"] == 2024]
+        title = f"Worldwide Skyscraper Construction, {last_year_str}"
+        data = data[data["year_finished_building"] == last_year]
         fig = map_parameters(data, animation_frame, title)
-        fig.save(filepath + "static_map.html")
+        fig.write_html(filepath + "output/static_map.html")
         fig.show()
         
     # Animated Map
     elif type == "animated":
         pio.renderers.default = 'browser'
         animation_frame = "year_finished_building"
-        title = "Worldwide Skyscraper Construction, 1900-2024"
+        title = f"Worldwide Skyscraper Construction, 1900-{last_year_str}"
         fig = map_parameters(data, animation_frame, title)
-        fig.save(filepath + "animated_map.html")
+        fig.write_html(filepath + "output/animated_map.html")
         fig.show()
     
     # GIF Map
@@ -564,7 +572,7 @@ def map_skyscraper_construction(data, type):
         pio.renderers.default = 'png'
         animation_frame = None
         
-        # Iterate Over Weeks
+        # Iterate Over Years
         for year in tqdm(data["year_finished_building"].unique().tolist()):
             # Duplicate DataFrame 
             data_temp = data
@@ -584,11 +592,11 @@ def map_skyscraper_construction(data, type):
             except:
                 break
  
-        # Create GIG from Compressed Images
+        # Create GIF from Compressed Images
         image_files = [f for f in os.listdir(filepath + "images") if f.endswith(('.png'))]
         image_files.sort()
         images = [Image.open(os.path.join(filepath + "images", file)) for file in image_files]
-        images[0].save(filepath + "gif_map.gif",
+        images[0].save(filepath + "output/gif_map.gif",
                        save_all = True, 
                        append_images = images[1:], 
                        optimize = True, 
@@ -597,7 +605,6 @@ def map_skyscraper_construction(data, type):
         
 
 # Create Maps of Worldwide Skyscraper Construction
-map_skyscraper_construction(df, type = "static")
-map_skyscraper_construction(df, type = "animated")
-map_skyscraper_construction(df, type = "gif")
-
+map_skyscraper_construction(df_map, type = "static")
+map_skyscraper_construction(df_map, type = "animated")
+#map_skyscraper_construction(df_map, type = "gif")
