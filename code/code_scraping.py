@@ -267,7 +267,7 @@ def scrape(df, id_city):
                         browser.find_element(By.XPATH, f"{base_string_alt}[{4 + 2*(number_building-1)}]/td[2]/a").click()
 
                 # Store Building-Specific HTML
-                time.sleep(10)
+                time.sleep(5)
                 soup = BeautifulSoup(browser.page_source, "html.parser")
 
                 # Gather Building Characteristics
@@ -336,15 +336,13 @@ def scrape(df, id_city):
 
 
 # Create Empty Dataframe to Hold Results
-#df = pd.DataFrame()
-#df = pd.read_excel(filepath + "data/raw_data.xlsx", usecols=lambda x: 'Unnamed' not in x)
-df = pd.read_excel(filepath + "data/raw_data2.xlsx", usecols=lambda x: 'Unnamed' not in x)
+df = pd.DataFrame()
 
 # Launch Browser
 browser = launch_browser()
 
 # Iterate Over Cities
-for id_city in tqdm(range(910,7000)):
+for id_city in tqdm(range(1,7000)):
     # Scrape Buildings in Selected City
     df_temp = scrape(df, id_city)
     
@@ -353,4 +351,4 @@ for id_city in tqdm(range(910,7000)):
     df = df.drop_duplicates(subset = ["name_building", "address_building"]).reset_index(drop = True)
 
     # Save Raw Data
-    df.to_excel(filepath + "data/raw_data2.xlsx")
+    df.to_excel(filepath + "data/raw_data.xlsx")

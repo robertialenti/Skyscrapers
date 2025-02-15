@@ -94,33 +94,24 @@ def server(input, output, session):
 
             # Add gray markers for non-skyscrapers
             if not row["skyscraper"]:
-                folium.CircleMarker(
+                folium.Circle(
                     location=[row["latitude_building"], row["longitude_building"]],
-                    radius=2,
-                    color='gray',  # Outline color
+                    radius=20,  
+                    color='gray',
                     fill=True,
-                    fill_color='gray',  # Fill color
-                    fill_opacity=1.0,  # Full opacity
+                    fill_color='gray',
+                    fill_opacity=0.50,
                     popup=folium.Popup(popup_content, max_width=500)
                 ).add_to(map)
 
-        # Add blue markers for skyscrapers
-        for _, row in filtered_data().iterrows():
-            if row["skyscraper"]:
-                popup_content = f"""
-                <b>Name:</b> {row['name_building']}<br>
-                <b>Address:</b> {row['address_building']}<br>
-                <b>Height:</b> {round(row['height_building_m'], 2)} meters<br>
-                <b>Year Completed:</b> {row['year_finished_building']}<br>
-                <b>Skyscraper:</b> {'Yes' if row['skyscraper'] else 'No'}
-                """
-                folium.CircleMarker(
+            else:
+                folium.Circle(
                     location=[row["latitude_building"], row["longitude_building"]],
-                    radius=2,
-                    color='blue',  # Outline color
+                    radius=30, 
+                    color='blue',
                     fill=True,
-                    fill_color='blue',  # Fill color
-                    fill_opacity=1.0,  # Full opacity
+                    fill_color='blue',
+                    fill_opacity=1,
                     popup=folium.Popup(popup_content, max_width=500)
                 ).add_to(map)
 
