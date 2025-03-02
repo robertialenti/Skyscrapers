@@ -77,4 +77,3 @@ df = df[df["status_building"] == "built"]
 
 # Save Cleaned Data
 df.to_excel(filepath + "data/cleaned_data.xlsx", index = False)
-# %%

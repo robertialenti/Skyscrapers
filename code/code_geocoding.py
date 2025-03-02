@@ -44,7 +44,6 @@ geocoding_api_key = ""
 #%% Section 2: Geocoding
 # Import Raw Data and Crosswalk
 df = pd.read_excel(filepath + "data/raw_data.xlsx", usecols=lambda x: 'Unnamed' not in x)
-#df = df[df["name_city"] == "Montreal"].reset_index(drop = True)
 df_crosswalk = pd.read_excel(filepath + "data/city_crosswalk.xlsx", sheet_name = "Crosswalk")
 
 # Correct Address
@@ -98,4 +97,3 @@ df[['latitude_building', 'longitude_building']] = (
 
 # Save Geocoded Data
 df.to_excel(filepath + "data/geocoded_data.xlsx", index = False)
-#df.to_excel(filepath + "data/montreal_data.xlsx", index = False)
