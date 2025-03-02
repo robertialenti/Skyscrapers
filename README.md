@@ -42,3 +42,5 @@ The dataset is collapsed by metro area and year. I take the sum of count and bui
 Here is a static map, showing the state of skyscraper construction in 2024.
 
 Here is an animated version, showing the growing prevalence of skyscrapers over the last 125 years. It is clear to see...
+
+You can also view an [interactive map](https://robertialenti.github.io/Skyscrapers/output/animated_map.html).
