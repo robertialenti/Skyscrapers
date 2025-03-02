@@ -47,7 +47,7 @@ geocoding_api_key = "AIzaSyB5ej9kIbpM7IHUHVUUcLEkCI5ZoFI_Bz8"
 
 #%% Section 2: Application Development
 # Import Clean Data
-df = pd.read_excel(filepath + "data/montreal_data.xlsx", usecols=lambda x: 'Unnamed' not in x)
+df = pd.read_excel(filepath + "data/cleaned_data.xlsx", usecols=lambda x: 'Unnamed' not in x)
 
 # UI
 app_ui = ui.page_fluid(
@@ -79,7 +79,7 @@ def server(input, output, session):
         # Center Map
         lat, lon = center_coordinates()
         # Initialize Map
-        map = folium.Map(location=[lat, lon], zoom_start=12)
+        map = folium.Map(location=[lat, lon], zoom_start=9)
 
         # Add Markers for Buildings
         for _, row in filtered_data().iterrows():
@@ -96,7 +96,7 @@ def server(input, output, session):
             if not row["skyscraper"]:
                 folium.Circle(
                     location=[row["latitude_building"], row["longitude_building"]],
-                    radius=20,  
+                    radius=30,  
                     color='gray',
                     fill=True,
                     fill_color='gray',

@@ -43,7 +43,7 @@ geocoding_api_key = "AIzaSyB5ej9kIbpM7IHUHVUUcLEkCI5ZoFI_Bz8"
 
 #%% Section 2: Cleaning Data
 # Import Geocoded Data
-df = pd.read_excel(filepath + "data/montreal_data.xlsx", usecols=lambda x: 'Unnamed' not in x)
+df = pd.read_excel(filepath + "data/geocoded_data.xlsx", usecols=lambda x: 'Unnamed' not in x)
 
 # Remove Potential Duplicate Buildings
 df = df.drop_duplicates(subset = ["name_building", "address_building"]).reset_index(drop = True)
@@ -58,6 +58,15 @@ df["year_finished_building"] = df["year_finished_building"].astype(pd.Int64Dtype
 df = df.rename(columns = {"height_building": "height_building_ft"})
 df["height_building_m"] = df["height_building_ft"]*0.3048
 
+# Interpolate Missing Building Height
+average_floor_height_m = 3.5
+df["height_building_m"] = df.apply(
+    lambda row: row["floors_building"] * average_floor_height_m
+    if pd.isna(row["height_building_m"]) or row["height_building_m"] == 0
+    else row["height_building_m"],
+    axis=1,
+)
+
 # Identify Skyscrapers
 df['skyscraper'] = df['height_building_m'].apply(lambda x: True if x >= 100 else False)
 
@@ -70,4 +79,4 @@ df = df[df['use_building'].str.contains(pattern, case=False, regex=True)]
 df = df[df["status_building"] == "built"]
 
 # Save Cleaned Data
-df.to_excel(filepath + "data/montreal_data.xlsx", index = False)
+df.to_excel(filepath + "data/cleaned_data.xlsx", index = False)

@@ -43,6 +43,7 @@ geocoding_api_key = "AIzaSyB5ej9kIbpM7IHUHVUUcLEkCI5ZoFI_Bz8"
 #%% Section 2: Geocoding
 # Import Raw Data and Crosswalk
 df = pd.read_excel(filepath + "data/raw_data.xlsx", usecols=lambda x: 'Unnamed' not in x)
+#df = df[df["name_city"] == "Montreal"].reset_index(drop = True)
 df_crosswalk = pd.read_excel(filepath + "data/city_crosswalk.xlsx", sheet_name = "Crosswalk")
 
 # Correct Address
@@ -63,6 +64,8 @@ df['name_metro_area'] = df['name_metro_area'].fillna(df['name_city'])
 
 # Define Function for Geocoding Metro Areas
 def geocode(address):
+    print(f"Geocoding: {address}")
+
     # Specify Parameters
     base_url = "https://maps.googleapis.com/maps/api/geocode/json?"
     parameters = {"key": geocoding_api_key,
@@ -70,8 +73,6 @@ def geocode(address):
     
     # Generate Reponse
     response = requests.get(base_url, parameters).json()
-    pretty_response = json.dumps(response, indent=4, ensure_ascii=False)
-    print(pretty_response)
 
     # Gather Coodinates
     if response["status"] == "OK":
@@ -82,31 +83,18 @@ def geocode(address):
         return latitude_building, longitude_building
     
     else:
-        print("Could not locate building.")
+        print("Could not geolocate building.")
         return None, None
 
-print(geocode(df.loc[df["name_building"] == "Édifice Jean-Lesage", "address_building"]))
 
-df.loc[df["name_building"] == "Édifice Jean-Lesage", "address_building"]
-
-# Geocode Sample of Buildings in Each Metro Area
-df_sample = df.groupby('name_metro_area').head(10)
+# Geocode Buildings
 tqdm.pandas()
-df_sample[['latitude_building', 'longitude_building']] = df_sample['address_building'].progress_apply(lambda x: geocode(x)).apply(pd.Series)
-df_sample = df_sample.groupby("name_metro_area")[["latitude_building", "longitude_building"]].mean().reset_index()
-df_sample = df_sample.drop_duplicates(subset = ["name_metro_area"]).reset_index(drop = True)
-
-df_montreal = df[df["name_metro_area"] == "Montreal"]
-tqdm.pandas()
-df_montreal[['latitude_building', 'longitude_building']] = df_montreal['address_building'].progress_apply(lambda x: geocode(x)).apply(pd.Series)
-df_montreal.to_excel(filepath + "data/montreal_data.xlsx", index = False)
-
-# Assign Coordinates to Each Metro Area Based on Geocoded Sample
-df = pd.merge(df, 
-              df_sample[['name_metro_area', 'latitude_building', 'longitude_building']], 
-              on = "name_metro_area",
-              how = "left")
-
+df[['latitude_building', 'longitude_building']] = (
+    df.progress_apply(
+        lambda row: geocode(f"{row['name_building']}, {row['address_building']}"), axis=1
+    ).apply(pd.Series)
+)
 
 # Save Geocoded Data
 df.to_excel(filepath + "data/geocoded_data.xlsx", index = False)
+#df.to_excel(filepath + "data/montreal_data.xlsx", index = False)

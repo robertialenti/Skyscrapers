@@ -49,14 +49,21 @@ df = pd.read_excel(filepath + "data/cleaned_data.xlsx", usecols=lambda x: 'Unnam
 df_agg = df
 
 # Calculate Coordinates by Metro Area
-df_sample = df_agg.groupby("name_metro_area")[["latitude_building", "longitude_building"]].mean().reset_index()
-df_sample = df_sample.drop_duplicates(subset = ["name_metro_area"]).reset_index(drop = True)
+df_coordinates = df_agg.groupby("name_metro_area")[["latitude_building", "longitude_building"]].mean().reset_index()
+df_coordinates = df_coordinates.drop_duplicates(subset = ["name_metro_area"]).reset_index(drop = True)
 
 # Assign Coordinates to Each Metro Area Based on Geocoded Sample
-df_agg = pd.merge(df_agg, 
-                  df_sample[['name_metro_area', 'latitude_building', 'longitude_building']], 
+df_agg = pd.merge(df_agg.loc[:, ~df_agg.columns.isin(["latitude_building", "longitude_building"])], 
+                  df_coordinates[['name_metro_area', 'latitude_building', 'longitude_building']], 
                   on = "name_metro_area",
                   how = "left")
+
+# Retain Skyscrapers
+df_agg = df_agg[df_agg["skyscraper"] == True]
+
+# Select Date Range to Animate
+df_agg = df_agg[df_agg["year_started_building"] >= 1900]
+df_agg = df_agg[df_agg["year_finished_building"] <= 2025]
 
 # Aggregate Variables of Interest by Metro Area and Year
 df_agg["count"] = 1
@@ -152,7 +159,11 @@ def map_parameters(data, animation_frame, title):
 
 # Define Function for Creating Map of Skyscraper Construction
 def create_map(data, type): 
-    # Find Last Year
+    # Define First Year
+    first_year = data["year_finished_building"].min()
+    first_year_str = str(first_year)
+
+    # Define Last Year
     last_year = data["year_finished_building"].max()
     last_year_str = str(last_year)
 
@@ -170,7 +181,7 @@ def create_map(data, type):
     else:
         pio.renderers.default = 'browser'
         animation_frame = "year_finished_building"
-        title = f"Worldwide Skyscraper Construction, 1900-{last_year_str}"
+        title = f"Worldwide Skyscraper Construction, {first_year_str}-{last_year_str}"
         fig = map_parameters(data, animation_frame, title)
         fig.write_html(filepath + "output/animated_map.html")
         fig.show()
