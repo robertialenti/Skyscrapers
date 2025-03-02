@@ -37,9 +37,6 @@ pd.set_option("display.expand_frame_repr", False)
 # Paths
 filepath = "C:/Users/Robert/OneDrive/Desktop/Bobby/GitHub/Skyscrapers/"
 
-# APIs
-geocoding_api_key = "AIzaSyB5ej9kIbpM7IHUHVUUcLEkCI5ZoFI_Bz8"
-
 
 #%% Section 2: Aggregating
 # Import Clean Data

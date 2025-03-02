@@ -38,7 +38,8 @@ pd.set_option("display.expand_frame_repr", False)
 filepath = "C:/Users/Robert/OneDrive/Desktop/Bobby/GitHub/Skyscrapers/"
 
 # APIs
-geocoding_api_key = "AIzaSyB5ej9kIbpM7IHUHVUUcLEkCI5ZoFI_Bz8"
+geocoding_api_key = ""
+
 
 #%% Section 2: Geocoding
 # Import Raw Data and Crosswalk
