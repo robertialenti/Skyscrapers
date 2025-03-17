@@ -22,7 +22,7 @@ The dataset is collapsed by metro area and year. I take the sum of count and bui
 
 Here is a static version of worldwide skyscraper distribution.
 
-<img src="https://github.com/robertialenti/Canadian-Place-Name-Etymology/raw/main/output/static_map.png">
+<img src="https://github.com/robertialenti/Skyscrapers/output/static_map.png">
 
 You can also view an [animation of worlwide skyscraper construction](https://robertialenti.github.io/Skyscrapers/output/animated_map.html).
 
