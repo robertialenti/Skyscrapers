@@ -17,9 +17,9 @@ The data is aggregated by metropolitain area and year. Cities that do not belong
 
 <img src="https://github.com/robertialenti/Skyscrapers/raw/main/output/static_map.png">
 
-In addition, I animate the map to show skyscraper construction, by metropolitain area, from the beginning of the 20th century through 2025. You can view the animation [here](https://robertialenti.github.io/Skyscrapers/output/animated_map.html).
+In addition, I animate the map to show skyscraper construction, by metropolitain area, from the beginning of the 20th century through 2025. The animation clearly shows the United States' early dominance in skyscraper construction, as well as recent, rapid growth of skyscrapers in East Asia and the Gulf nations. You can view the animation [here](https://robertialenti.github.io/Skyscrapers/output/animated_map.html).
 
 ### 5. Application
 The ShinyApp I developed was deployed to the web and is hosted on Posit. It can be accessed [here](https://robertialenti.shinyapps.io/application).
 
-Note, as Skyscraperpage's privacy policy asks that data is not published publicly, I choose not to post the dataset in this repository.
+Note, as Skyscraperpage's privacy policy asks that data is not published publicly, I choose not to post the data collected by my scraper in this repository.
