@@ -29,13 +29,13 @@ df = pd.read_excel(filepath + "data/cleaned_data.xlsx", usecols=lambda x: 'Unnam
 df_agg = df
 
 # Calculate Coordinates by Metro Area
-df_coordinates = df_agg.groupby("name_metro_area")[["latitude_building", "longitude_building"]].mean().reset_index()
-df_coordinates = df_coordinates.drop_duplicates(subset = ["name_metro_area"]).reset_index(drop = True)
+df_coordinates = df_agg.groupby(["country_building", "name_metro_area"])[["latitude_building", "longitude_building"]].mean().reset_index()
+df_coordinates = df_coordinates.drop_duplicates(subset = ["country_building", "name_metro_area"]).reset_index(drop = True)
 
-# Assign Coordinates to Each Metro Area Based on Geocoded Sample
+# Assign Coordinates to Each Metro Area
 df_agg = pd.merge(df_agg.loc[:, ~df_agg.columns.isin(["latitude_building", "longitude_building"])], 
-                  df_coordinates[['name_metro_area', 'latitude_building', 'longitude_building']], 
-                  on = "name_metro_area",
+                  df_coordinates[["country_building", 'name_metro_area', 'latitude_building', 'longitude_building']], 
+                  on = ["country_building", "name_metro_area"],
                   how = "left")
 
 # Retain Skyscrapers
@@ -47,7 +47,7 @@ df_agg = df_agg[df_agg["year_finished_building"] <= 2025]
 
 # Aggregate Variables of Interest by Metro Area and Year
 df_agg["count"] = 1
-df_agg = df_agg.groupby(["name_metro_area", "year_finished_building"]).agg(
+df_agg = df_agg.groupby(["country_building", "name_metro_area", "year_finished_building"]).agg(
     {"count": "sum",
      "height_building_m": "sum",
      "latitude_building": "mean",
@@ -55,22 +55,23 @@ df_agg = df_agg.groupby(["name_metro_area", "year_finished_building"]).agg(
     ).reset_index()
 
 # Rectangularize Data
-all_years = pd.Series(range(int(df_agg["year_finished_building"].min()), int(df_agg["year_finished_building"].max()) + 1))
+countries = df_agg["country_building"].unique()
 metro_areas = df_agg["name_metro_area"].unique()
-all_combinations = pd.MultiIndex.from_product([metro_areas, all_years], names=["name_metro_area", "year_finished_building"]).to_frame(index=False)
+all_years = pd.Series(range(int(df_agg["year_finished_building"].min()), int(df_agg["year_finished_building"].max()) + 1))
+all_combinations = pd.MultiIndex.from_product([countries, metro_areas, all_years], names=["country_building", "name_metro_area", "year_finished_building"]).to_frame(index=False)
 df_agg = all_combinations.merge(df_agg, 
-    on=["name_metro_area", "year_finished_building"], 
+    on=["country_building", "name_metro_area", "year_finished_building"], 
     how="left")
 
 # Filling Missing Variables of Interest
-df_agg['latitude_building'] = df_agg.groupby('name_metro_area')['latitude_building'].transform(lambda group: group.ffill().bfill())
-df_agg['longitude_building'] = df_agg.groupby('name_metro_area')['longitude_building'].transform(lambda group: group.ffill().bfill())
+df_agg['latitude_building'] = df_agg.groupby(['country_building', 'name_metro_area'])['latitude_building'].transform(lambda group: group.ffill().bfill())
+df_agg['longitude_building'] = df_agg.groupby(['country_building', 'name_metro_area'])['longitude_building'].transform(lambda group: group.ffill().bfill())
 df_agg.fillna({"count": 0, 'height_building_m': 0}, inplace=True)
-df_agg = df_agg.sort_values(by = ["name_metro_area", "year_finished_building"])
+df_agg = df_agg.sort_values(by = ["country_building", "name_metro_area", "year_finished_building"])
 
 # Generate Cumulative Variables of Interest
-df_agg["cum_count"] = df_agg.groupby("name_metro_area")["count"].cumsum()
-df_agg["cum_height"] = df_agg.groupby("name_metro_area")["height_building_m"].cumsum()
+df_agg["cum_count"] = df_agg.groupby(["country_building", "name_metro_area"])["count"].cumsum()
+df_agg["cum_height"] = df_agg.groupby(["country_building", "name_metro_area"])["height_building_m"].cumsum()
 
 
 #%% Section 3: Mapping
@@ -170,3 +171,4 @@ def create_map(data, type):
 # Create Maps of Worldwide Skyscraper Construction
 create_map(df_map, type = "static")
 create_map(df_map, type = "animated")
+# %%
