@@ -1,34 +1,9 @@
 #%% Section 1: Preliminaries
 # Libraries
 # General
-from tqdm import tqdm
 import pandas as pd
-import time
-import random
-import re
-import io
-import os
 import warnings
-import requests
-
-# Web Scraping
-import undetected_chromedriver as uc
-from webdriver_manager.chrome import ChromeDriverManager
-from bs4 import BeautifulSoup
-from selenium import webdriver
-from selenium_stealth import stealth
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-
-# Mapping
-import plotly.io as pio
-from PIL import Image
-import plotly.graph_objects as go
-from PIL import Image as PILImage
-from chart_studio.plotly import image as PlotlyImage
-import plotly.express as px
-pio.renderers.default = 'browser'
+import pycountry
 
 # Other
 warnings.filterwarnings("ignore", category=FutureWarning, message="The frame.append method is deprecated and will be removed from pandas in a future version. Use pandas.concat instead.")
@@ -42,8 +17,16 @@ filepath = "C:/Users/Robert/OneDrive/Desktop/Bobby/GitHub/Skyscrapers/"
 # Import Geocoded Data
 df = pd.read_excel(filepath + "data/geocoded_data.xlsx", usecols=lambda x: 'Unnamed' not in x)
 
+# Trim Whitespace from String Variables
+for column in df.select_dtypes(include = ["object"]).columns:
+    df[column] = df[column].str.strip()
+
 # Remove Potential Duplicate Buildings
 df = df.drop_duplicates(subset = ["name_building", "address_building"]).reset_index(drop = True)
+
+# Extract Country from Building Address
+countries = [country.name for country in pycountry.countries]
+df["country_building"] = df["address_building"].apply(lambda x: next((country for country in countries if country.lower() in x.lower()), None))
 
 # Convert Year Started and Year Finished to Integer
 df['year_started_building'] = pd.to_numeric(df['year_started_building'], errors='coerce')
@@ -64,6 +47,9 @@ df["height_building_m"] = df.apply(
     axis=1,
 )
 
+# Retain Only Tall Buildings
+df = df[df["height_building_m"] >= 50]
+
 # Identify Skyscrapers
 df['skyscraper'] = df['height_building_m'].apply(lambda x: True if x >= 100 else False)
 
@@ -77,3 +63,4 @@ df = df[df["status_building"] == "built"]
 
 # Save Cleaned Data
 df.to_excel(filepath + "data/cleaned_data.xlsx", index = False)
+df.to_excel(filepath + "application/cleaned_data.xlsx", index = False)

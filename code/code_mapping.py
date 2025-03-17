@@ -1,25 +1,8 @@
 #%% Section 1: Preliminaries
 # Libraries
 # General
-from tqdm import tqdm
 import pandas as pd
-import time
-import random
-import re
-import io
-import os
 import warnings
-import requests
-
-# Web Scraping
-import undetected_chromedriver as uc
-from webdriver_manager.chrome import ChromeDriverManager
-from bs4 import BeautifulSoup
-from selenium import webdriver
-from selenium_stealth import stealth
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
 
 # Mapping
 import plotly.io as pio
@@ -168,7 +151,7 @@ def create_map(data, type):
     if type == "static":
         pio.renderers.default = 'browser'
         animation_frame = None
-        title = f"Worldwide Skyscraper Construction, {last_year_str}"
+        title = f"Worldwide Distribution of Skyscrapers, {last_year_str}"
         data = data[data["year_finished_building"] == last_year]
         fig = map_parameters(data, animation_frame, title)
         fig.write_html(filepath + "output/static_map.html")
@@ -178,7 +161,7 @@ def create_map(data, type):
     else:
         pio.renderers.default = 'browser'
         animation_frame = "year_finished_building"
-        title = f"Worldwide Skyscraper Construction, {first_year_str}-{last_year_str}"
+        title = f"Worldwide Construction of Skyscrapers, {first_year_str}-{last_year_str}"
         fig = map_parameters(data, animation_frame, title)
         fig.write_html(filepath + "output/animated_map.html")
         fig.show()
