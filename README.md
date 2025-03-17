@@ -6,30 +6,20 @@ This repository includes the Python code needed to scrape SkyscraperPage - a dat
 In this section, I import the libraries needed to scrape the building data. The building-level data is gathered from [SkyscraperPage](https://skyscraperpage.com/), which provides comprehensive coverage of large buildings across more than 7,000 cities. The scraper uses Selenium and BeautifulSoup to dynamically navigate the website and parse HTML on each city's webpage. In each city, I collect property-level information for all buildings, which includes their address, completion status, height, etc. The scraper uses an undetected Chrome instance. I also recommend also using a VPN.
 
 ### 2. Geocoding
-Next, I geocode all of the buildings whose details I gathered by programatically passing their addresses into Google's Geocoding API.
+Next, I geocode all of the buildings whose details I gathered by programatically passing their addresses into Google's Geocoding API. I group cities by metropolitain area using a crosswalk I created.
 
 ### 3. Cleaning
-In this section, I clean the data by removing potential duplicates, extracting country from building address, and imputing building height for buildings without a published height.
-As I will be plotting skyscraper construction by metro area, I choose to simply geoccode a small sample of buildings from each metropolitain area and use the average latitude and longitude to geolocate the metro area. This reduces the number of geocoding calls performed with Google's Geocoding API - as it circumvents the need to geolocate each metro areas constituent cities - and makes the visualization more readable.
-
-The data is aggregated by metropolitain area using SkyscraperPage's aggregation. Cities that do not belong to metropolitain areas are left ungrouped. 
-
-I clean the data by retaining only buildings with a height of at least 100 meters, as this is the threshold commonly used to ___
+In this section, I clean the data by removing potential duplicate buildings, extracting country name from a building's address. I also impute the height of buildings, for which no value exists, by using floor count and assuming that each floor is 3.5 meters tall. I then retain only tall buildings, which I define as rising higher than 50 meters. I classify skyscrapers as being buildings with a height greater than 100 meters. I ignore buildings still in the planning or construction phases as well as buildings constructed for the purpose of radio or television.
 
 ### 4. Mapping
 
-The dataset is collapsed by metro area and year. I take the sum of count and building height. The aggregate variables are then used to track total number of buildings and total building height built by metro area over time.
-
-Here is a static version of worldwide skyscraper distribution.
+The data is aggregated by metropolitain area and year. Cities that do not belong to metropolitain areas are left ungrouped. I create a static map, in which I plot the total number of buildings and total building height, by metropolitain area, in 2025. Here is the resulting map.
 
 <img src="https://github.com/robertialenti/Skyscrapers/raw/main/output/static_map.png">
 
-You can also view an animation of worlwide skyscraper construction, beginning at the start of the 20th century, [here](https://robertialenti.github.io/Skyscrapers/output/animated_map.html).
+In addition, I animate the map to show skyscraper construction, by metropolitain area, from the beginning of the 20th century through 2025. You can view the animation [here](https://robertialenti.github.io/Skyscrapers/output/animated_map.html).
 
 ### 5. Application
 The ShinyApp I developed was deployed to the web and is hosted on Posit. It can be accessed [here](https://robertialenti.shinyapps.io/application).
 
-As Skyscraperpage's privacy policy asks that data is not published publicly, I choose not to post the dataset in this repository.
-
-
-
+Note, as Skyscraperpage's privacy policy asks that data is not published publicly, I choose not to post the dataset in this repository.
