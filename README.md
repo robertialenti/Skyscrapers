@@ -24,7 +24,7 @@ Here is a static version of worldwide skyscraper distribution.
 
 <img src="https://github.com/robertialenti/Skyscrapers/raw/main/output/static_map.png">
 
-You can also view an [animation of worlwide skyscraper construction](https://robertialenti.github.io/Skyscrapers/output/animated_map.html).
+You can also view an animation of worlwide skyscraper construction, beginning at the start of the 20th century, [here](https://robertialenti.github.io/Skyscrapers/output/animated_map.html).
 
 ### 5. Application
 The ShinyApp I developed is hosted on ShinyIo and can be acessed [here](https://robertialenti.shinyapps.io/application).
